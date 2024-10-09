@@ -1,0 +1,11 @@
+curl -X POST "http://127.0.0.1:8000/scrum-master/" \
+-H "Content-Type: application/json" \
+-d '{
+    "messages": [
+        {"speaker": "Alice", "message": "Привет, команда! Как продвигается проект?", "time": "10:00"},
+        {"speaker": "Bob", "message": "Я закончил свою часть работы, остались небольшие недоработки.", "time": "10:01"},
+        {"speaker": "Charlie", "message": "Есть ли какие-то проблемы с интеграцией?", "time": "10:02"},
+        {"speaker": "Alice", "message": "Пока всё идет хорошо, но нужно обсудить несколько деталей.", "time": "10:03"},
+        {"speaker": "Bob", "message": "Согласен, давайте определимся с сроками.", "time": "10:04"}
+    ]
+}'
