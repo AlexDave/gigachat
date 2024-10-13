@@ -8,23 +8,26 @@ import os
 app = FastAPI()
 
 # Используйте токен, полученный в личном кабинете из поля Авторизационные данные
-giga = GigaChat(credentials="YmM1YmM1OWItNjZmZS00MjMyLWEzNDktMGE2MWQ4MTdmOGIyOmI5YWFmMjU1LWYwN2EtNDdlMS1hNTg1LTY5NmRkYmJlZGNhYw==", verify_ssl_certs=False)
+giga = GigaChat(credentials="YmM1YmM1OWItNjZmZS00MjMyLWEzNDktMGE2MWQ4MTdmOGIyOmJlZDUzYjMyLTM1ZDEtNDE0Ni05MDM3LTdhOTY5NjU2ZDFhZQ==", verify_ssl_certs=False)
 
 # Модель данных для истории сообщений
 class Message(BaseModel):
-    speaker: str
-    message: str
-    time: str
+    sender: str
+    content: str
+    timestamp: str
 
 class MessageHistory(BaseModel):
     messages: list[Message]
 
 @app.post("/summary/")
 async def create_summary(history: MessageHistory):
-    # Форматирование истории сообщений для обработки
-    formatted_history = "\n".join([f"{msg.speaker} ({msg.time}): {msg.message}" for msg in history.messages])
+    print("Полученные данные:", history.dict())  # Логирование входных данных
     
-    # Формулирование запроса к модели для резюме
+    if not history.messages:
+        raise HTTPException(status_code=400, detail="Сообщения не могут быть пустыми")
+    
+    formatted_history = "\n".join([f"{msg.sender} ({msg.timestamp}): {msg.content}" for msg in history.messages])
+    
     prompt = (
         "Проанализируйте следующую историю сообщений:\n"
         f"{formatted_history}\n"
@@ -36,18 +39,16 @@ async def create_summary(history: MessageHistory):
     )
     
     try:
-        # Отправка запроса и получение ответа
         response = giga.chat(prompt)
-        
-        # Проверка на наличие ответа
         if not response.choices:
             raise HTTPException(status_code=500, detail="No response from GigaChat")
         
-        # Возвращение результата
         return {"summary": response.choices[0].message.content}
     
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"Ошибка: {str(e)}")  # Логирование ошибки
+        raise HTTPException(status_code=500, detail="Ошибка обработки запроса")
+
 
 @app.post("/scrum-master/")
 async def scrum_master_decision(history: MessageHistory):
