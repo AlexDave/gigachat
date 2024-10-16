@@ -8,7 +8,7 @@ import os
 app = FastAPI()
 
 # Используйте токен, полученный в личном кабинете из поля Авторизационные данные
-giga = GigaChat(credentials="YmM1YmM1OWItNjZmZS00MjMyLWEzNDktMGE2MWQ4MTdmOGIyOmJlZDUzYjMyLTM1ZDEtNDE0Ni05MDM3LTdhOTY5NjU2ZDFhZQ==", verify_ssl_certs=False)
+giga = GigaChat(credentials="YmM1YmM1OWItNjZmZS00MjMyLWEzNDktMGE2MWQ4MTdmOGIyOjUwOTJkYmVkLWFkNWQtNGJlMi1iODNjLTZjNmVmMDRlNGNiNg==", verify_ssl_certs=False)
 
 # Модель данных для истории сообщений
 class Message(BaseModel):
@@ -53,7 +53,7 @@ async def create_summary(history: MessageHistory):
 @app.post("/scrum-master/")
 async def scrum_master_decision(history: MessageHistory):
     # Форматирование истории сообщений для обработки
-    formatted_history = "\n".join([f"{msg.speaker} ({msg.time}): {msg.message}" for msg in history.messages])
+    formatted_history = "\n".join([f"{msg.sender} ({msg.timestamp}): {msg.content}" for msg in history.messages])
     
     # Формулирование запроса к модели для скрам-мастера
     prompt = (
@@ -65,6 +65,9 @@ async def scrum_master_decision(history: MessageHistory):
         "2. Насколько продуктивно и конструктивно проходит обсуждение?\n"
         "3. Есть ли необходимость прояснить какие-либо моменты или подтолкнуть команду к следующему шагу?\n\n"
         "Если ты считаешь, что вмешательство не требуется и команда сама справляется, ответь 'w8'. "
+        "Или информации недостаточно то ответь 'w8'."
+        "Не пиши, что ты нейросетевая модель и не проси менять тему"
+        "Оцени встречу и дай советы"
         "Если ты решишь, что нужно вмешаться, подготовь сообщение для команды с рекомендациями.\n\n"
         f"История сообщений:\n{formatted_history}"
     )
@@ -76,6 +79,8 @@ async def scrum_master_decision(history: MessageHistory):
         # Проверка на наличие ответа
         if not response.choices:
             raise HTTPException(status_code=500, detail="No response from GigaChat")
+        
+        print("Полученные данные:",  response.choices[0].message.content)  # Логирование входных данных
         
         # Возвращение результата
         return {"decision": response.choices[0].message.content}
